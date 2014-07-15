@@ -103,7 +103,9 @@ ASIdata <- setRefClass("data",
 			},
 
 			distance2 = function(individual, class, genericPair){
-				return( 1/nrow(data)* sum((genericPair$phi-genericImplicationsMatrix[,class])^2
+				joinedWithClass <- which(!(joinMatrix[class,] %in% NaN))
+				classSubclasses <- joinMatrix[joinedWithClass > nPrimitiveClasses]
+				return( 1/length(classSubclasses) * sum((genericPair$phi-genericImplicationsMatrix[individual,classSubclasses])^2
 								  		  / 1-genericPair$phi))
 			},
 
