@@ -142,7 +142,7 @@ ASIdata <- setRefClass("data",
 					simMat <- similarityMatrix
 				else 
 					simMat <- similarityMatrix[-joined, -joined] 
-				return simMat
+				return(simMat)
 			}
 
 	)
