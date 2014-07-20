@@ -10,16 +10,16 @@ performASISimilarityClassification <-function(data, model = 'pois'){
 
 
 callASIAlgorithm <-function( data, tree, model){
-	ASIdata <- ASIdata$new( data, model)
+	aData <- ASImodel$new( data, model)
 
 	for( i in 1:( ncol(data)-1))
 	{
-		Tuple <- ASIdata.getMaximumSimilarity()
-		append(tree$genericPairs, ASIdata$findGenericPairAtLevel(Tuple))
+		Tuple <- ASImodel$getMaximumSimilarity()
+		append(tree$genericPairs, aData$findGenericPairAtLevel(Tuple))
 		tree$appendHierarchyLevel(Tuple)
-		ASIdata$joinClasses(Tuple)
-		ASIdata$computeSimilarityMatrix()
+		aData$joinClasses(Tuple)
+		aData$computeSimilarityMatrix()
 	}
-	tree$significative <- ASIdata$getSignificativeNodes()
+	tree$significative <- ASImodel$getSignificativeNodes()
 	return(tree)
 }

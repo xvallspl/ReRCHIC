@@ -1,4 +1,16 @@
-ASIdata <- setRefClass("data",
+#' A Reference Class to represent the Statistical Implicative Analysis model.
+#' @name ASImodel
+#' @import methods
+#' @export ASImodel
+#' @exportClass ASImodel
+#' @field data 	External data.
+#' @field model Probability model to use. Binom or pois.
+#' @field joinMatrix Matrix of joint classes
+#' @field similarityMatrix Matrix of bivariant similarities.
+#' @field genericImplicationsMatrix Matrix of generic Implications
+#' @field nPrimitiveClasses Number of primitive classes
+
+ASImodel <- setRefClass("ASImodel",
 	fields = c("data", "model", "joinMatrix", "similarityMatrix","genericImplicationsMatrix", "nPrimitiveClasses"),
 	methods = list( 
 			
@@ -14,7 +26,7 @@ ASIdata <- setRefClass("data",
 				.self$model <<- model
 				initializeSimilarityMatrix()
 				joinMatrix <<- matrix(NaN, nPrimitiveClasses, nPrimitiveClasses)
-				diag(joinMatrix)<<-(1:nPrimitiveClasses)
+				diag(joinMatrix)<<-(Inf)
 				genericImplicationsMatrix <<- matrix(1, nrow(data), nPrimitiveClasses-1)
 
 				#Reporting, to be extracted
@@ -43,10 +55,10 @@ ASIdata <- setRefClass("data",
 			 },
 
 			 getJoinedClassesAtLevel = function(level, primitivesOnly = FALSE){
-			 	if(level> ncol(similarityMatrix))
+			 	if((level+nPrimitiveClasses)> ncol(similarityMatrix))
 					stop("Wrong level or level still not computed")
 				if(!primitivesOnly) n <- nPrimitiveClasses+level else n <- nPrimitiveClasses
-				return(unique(which(joinMatrix[1:n, 1:n] <= level , arr.ind = T))[, 1])
+				return(unique(array(which(joinMatrix[1:n, 1:n] <= level , arr.ind = T))))
 			 },
 
 			joinClasses = function(Tuple){
@@ -75,10 +87,10 @@ ASIdata <- setRefClass("data",
 				newClass <- array(NaN, ncol(joinMatrix))
 				joinedWithFirst	 <- which( !(joinMatrix[Tuple[1], ] %in% NaN))
 				joinedWithSecond <- which( !(joinMatrix[Tuple[2], ] %in% NaN))
-				joinMatrix[joinedWithFirst,joinedWithSecond] <<- ncol(similarityMatrix)
-				joinMatrix[joinedWithSecond,joinedWithFirst] <<- ncol(similarityMatrix)	#Simmetry
-				newClass[c(joinedWithFirst, joinedWithSecond)] <- ncol(similarityMatrix)
-				joinMatrix <<- rbind(cbind(joinMatrix, newClass), c(newClass, ncol(similarityMatrix)))
+				joinMatrix[joinedWithFirst,joinedWithSecond] <<- ncol(similarityMatrix)-nPrimitiveClasses
+				joinMatrix[joinedWithSecond,joinedWithFirst] <<- ncol(similarityMatrix)-nPrimitiveClasses	#Simmetry
+				#newClass[c(joinedWithFirst, joinedWithSecond)] <- ncol(similarityMatrix)-nPrimitiveClasses
+				joinMatrix <<- rbind(cbind(joinMatrix, newClass), c(newClass, Inf))
 			},
 
 			findGenericPairAtLevel = function(Tuple, level=ncol(similarityMatrix)){
