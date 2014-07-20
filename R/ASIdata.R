@@ -16,6 +16,12 @@ ASIdata <- setRefClass("data",
 				joinMatrix <<- matrix(NaN, nPrimitiveClasses, nPrimitiveClasses)
 				diag(joinMatrix)<<-(1:nPrimitiveClasses)
 				genericImplicationsMatrix <<- matrix(1, nrow(data), nPrimitiveClasses-1)
+
+				#Reporting, to be extracted
+				print("Similarity Indices")
+				#colnames, rownames
+				print(similarityMatrix)				
+
 			},	
 
 			initializeSimilarityMatrix = function(){
@@ -32,11 +38,7 @@ ASIdata <- setRefClass("data",
 			},
 
 			getMaximumSimilarity = function(level = ncol(similarityMatrix)- nPrimitiveClasses){
-				joined <- getJoinedClassesAtLevel(level)
-				if(!length(joined)) 
-					simMat <- similarityMatrix
-				else 
-					simMat <- similarityMatrix[-joined, -joined] 
+				simMat <- getSimilarityMatrixAtLevel(level)
 			 	return(which( simMat == max(simMat), arr.ind = TRUE )[1, ]) 
 			 },
 
@@ -132,6 +134,16 @@ ASIdata <- setRefClass("data",
 										  %in% SimilaritiesSepparated)) - 
 				            (length(SimilaritiesJoined)*(length(SimilaritiesJoined)+1))/(2*2) 
 				return(list( cardinal= cardinal, nJoin = length(SimilaritiesJoined)/2, nSep = length(SimilaritiesSepparated)/2))
+			},
+			#report
+			getSimilarityMatrixAtLevel = function(level){
+				joined <- getJoinedClassesAtLevel(level)
+				if(!length(joined)) 
+					simMat <- similarityMatrix
+				else 
+					simMat <- similarityMatrix[-joined, -joined] 
+				return simMat
 			}
+
 	)
 )
