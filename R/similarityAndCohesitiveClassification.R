@@ -9,17 +9,24 @@ performASISimilarityClassification <-function(data, model = 'pois'){
 # }
 
 
-callASIAlgorithm <-function( data, tree, model){
+callASIAlgorithm <-function( data, tree, model, report=FALSE){
 	aData <- ASImodel$new( data, model)
-
 	for( i in 1:( ncol(data)-1))
 	{
-		Tuple <- ASImodel$getMaximumSimilarity()
-		append(tree$genericPairs, aData$findGenericPairAtLevel(Tuple))
-		tree$appendHierarchyLevel(Tuple)
+		Tuple <- aData$getMaximumSimilarity()
+		#append(tree$genericPairs, aData$findGenericPairAtLevel(Tuple))
+		#tree$appendHierarchyLevel(Tuple)
 		aData$joinClasses(Tuple)
-		aData$computeSimilarityMatrix()
 	}
-	tree$significative <- ASImodel$getSignificativeNodes()
-	return(tree)
+
+	if(report){
+		report = list()
+		report$initialSimilarityMatrix<-aData$getSimilarityMatrixAtLevel(0)
+		report$cor <-cor(data)
+		report$basicStats <- cbind(apply(data,2,sum), apply(data, 2, mean), apply(data,2, sd))
+		colnames(report$basicStats)<-c("freq","mean","sd")
+
+	}
+	#tree$significative <- ASImodel$getSignificativeNodes()
+	#return(tree)
 }

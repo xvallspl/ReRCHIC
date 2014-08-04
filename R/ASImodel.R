@@ -55,14 +55,13 @@ ASImodel <- setRefClass("ASImodel",
 			 },
 
 			 getJoinedClassesAtLevel = function(level, primitivesOnly = FALSE){
-			 	if((level+nPrimitiveClasses)> ncol(similarityMatrix))
-					stop("Wrong level or level still not computed")
+			 	checkIfLevelExists(level)
 				if(!primitivesOnly) n <- nPrimitiveClasses+level else n <- nPrimitiveClasses
 				return(unique(array(which(joinMatrix[1:n, 1:n] <= level , arr.ind = T))))
 			 },
 
 			joinClasses = function(Tuple){
-				if(ncol(similarityMatrix) == (2*ncol(data)-1)) stop("You're alreay at the last level!")
+				if(ncol(similarityMatrix) == (2*ncol(data)-1)) stop("You're already at the last level!")
 			 	computeNewClassSimilarities(Tuple)
 			 	updateJoinMatrix(Tuple)
 			},
@@ -109,8 +108,7 @@ ASImodel <- setRefClass("ASImodel",
 				return(list(phi = maxPhi, pos = maxPhiInd))
 			},
 
-			implicacionesGenericas = function(genericPair, p = 0.5){
-				
+			genericImplications = function(genericPair, p = 0.5){				
 				for(i in 1:nrow(data))
 				{
 					if(data[i, genericPair[2]]!=1)
@@ -152,12 +150,18 @@ ASImodel <- setRefClass("ASImodel",
 			},
 			#report
 			getSimilarityMatrixAtLevel = function(level){
+				checkIfLevelExists(level)
 				omit <-getJoinedClassesAtLevel(level)
 				if(!length(omit)) 
 					simMat <- similarityMatrix[1:(nPrimitiveClasses+level), 1:(nPrimitiveClasses+level)]
 				else 
 					simMat <- similarityMatrix[1:(nPrimitiveClasses+level),1:(nPrimitiveClasses+level)][-omit, -omit] 
 				return(simMat)
+			},
+
+			.checkIfLevelExists = function(level){
+				if((level+nPrimitiveClasses)> ncol(similarityMatrix))
+					stop("Wrong level or level still not computed")
 			}
 
 	)
