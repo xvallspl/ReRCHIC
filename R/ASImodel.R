@@ -28,12 +28,6 @@ ASImodel <- setRefClass("ASImodel",
 				joinMatrix <<- matrix(NaN, nPrimitiveClasses, nPrimitiveClasses)
 				diag(joinMatrix)<<-(Inf)
 				genericImplicationsMatrix <<- matrix(1, nrow(data), nPrimitiveClasses-1)
-
-				#Reporting, to be extracted
-				print("Similarity Indices")
-				#colnames, rownames
-				print(similarityMatrix)				
-
 			},	
 
 			initializeSimilarityMatrix = function(){
@@ -51,19 +45,22 @@ ASImodel <- setRefClass("ASImodel",
 
 			getMaximumSimilarity = function(level = ncol(similarityMatrix)- nPrimitiveClasses){
 				simMat <- getSimilarityMatrixAtLevel(level)
-			 	return(which( similarityMatrix == max(simMat), arr.ind = TRUE )[1, ]) 
+				joined <- getJoinedClassesAtLevel(level)
+				M <-which( similarityMatrix == max(simMat), arr.ind = TRUE )
+				MnotJoined<-apply( M, 1, function(x){all(!(x %in%joined))})
+			 	return(M[MnotJoined,][1, ])
 			 },
 
 			 getJoinedClassesAtLevel = function(level, primitivesOnly = FALSE){
-			 	checkIfLevelExists(level)
+			 	.checkIfLevelExists(level)
 				if(!primitivesOnly) n <- nPrimitiveClasses+level else n <- nPrimitiveClasses
 				return(unique(array(which(joinMatrix[1:n, 1:n] <= level , arr.ind = T))))
 			 },
 
 			joinClasses = function(Tuple){
 				if(ncol(similarityMatrix) == (2*ncol(data)-1)) stop("You're already at the last level!")
-			 	computeNewClassSimilarities(Tuple)
 			 	updateJoinMatrix(Tuple)
+			 	computeNewClassSimilarities(Tuple)
 			},
 
 			computeNewClassSimilarities = function(Tuple){
@@ -150,7 +147,7 @@ ASImodel <- setRefClass("ASImodel",
 			},
 			#report
 			getSimilarityMatrixAtLevel = function(level){
-				checkIfLevelExists(level)
+				.checkIfLevelExists(level)
 				omit <-getJoinedClassesAtLevel(level)
 				if(!length(omit)) 
 					simMat <- similarityMatrix[1:(nPrimitiveClasses+level), 1:(nPrimitiveClasses+level)]
