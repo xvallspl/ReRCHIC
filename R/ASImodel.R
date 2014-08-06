@@ -48,7 +48,7 @@ ASImodel <- setRefClass("ASImodel",
 				joined <- getJoinedClassesAtLevel(level)
 				M <-which( similarityMatrix == max(simMat), arr.ind = TRUE )
 				MnotJoined<-apply( M, 1, function(x){all(!(x %in%joined))})
-			 	return(M[MnotJoined,][1, ])
+			 	return(list(nodes = M[MnotJoined,][1, ], value = max(simMat)))
 			 },
 
 			 getJoinedClassesAtLevel = function(level, primitivesOnly = FALSE){
@@ -59,8 +59,8 @@ ASImodel <- setRefClass("ASImodel",
 
 			joinClasses = function(Tuple){
 				if(ncol(similarityMatrix) == (2*ncol(data)-1)) stop("You're already at the last level!")
-			 	updateJoinMatrix(Tuple)
 			 	computeNewClassSimilarities(Tuple)
+			 	updateJoinMatrix(Tuple)
 			},
 
 			computeNewClassSimilarities = function(Tuple){

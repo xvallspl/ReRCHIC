@@ -14,11 +14,11 @@ callASIAlgorithm <-function( data, tree, model, report=FALSE){
 	treeLevels = array('', ncol(data)-1)
 	for( i in 1:( ncol(data)-1))
 	{
-		Tuple <- aData$getMaximumSimilarity()
-		#append(tree$genericPairs, aData$findGenericPairAtLevel(Tuple))
-		Tuple[Tuple>ncol(data)] = tree[Tuple[Tuple>ncol(data)]-ncol(data)]
-		tree[i]=paste("(", Tuple[1],",",Tuple[2] ,")", sep="")
-		aData$joinClasses(Tuple)
+		S <- aData$getMaximumSimilarity()
+		#append(tree$genericPairs, aData$findGenericPairAtLevel(S$nodes))
+		aData$joinClasses(S$nodes)
+		S$nodes[S$nodes>ncol(data)] = tree[S$nodes[S$nodes>ncol(data)]-ncol(data)]
+		tree[i]=paste("(", S$nodes[1],",",S$nodes[2] ,"):", S$value,sep="")
 	}
 	tree = paste(tree, ';', sep="")
 	if(report){
@@ -29,6 +29,4 @@ callASIAlgorithm <-function( data, tree, model, report=FALSE){
 		colnames(report$basicStats)<-c("freq","mean","sd")
 		report$tree <- tree
 	}
-	#tree$significative <- ASImodel$getSignificativeNodes()
-	#return(tree)
 }
