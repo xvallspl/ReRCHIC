@@ -23,10 +23,26 @@ callASIAlgorithm <-function( data, tree, model, report=FALSE){
 	tree = paste(tree, ';', sep="")
 	if(report){
 		report = list()
+		report$dims <- c(ncol(data), nrow(data))
 		report$initialSimilarityMatrix<-aData$getSimilarityMatrixAtLevel(0)
 		report$cor <-cor(data)
+		report$freq <- NULL
 		report$basicStats <- cbind(apply(data,2,sum), apply(data, 2, mean), apply(data,2, sd))
 		colnames(report$basicStats)<-c("freq","mean","sd")
 		report$tree <- tree
 	}
+}
+
+displayReport <- function(report)
+{
+	print(paste("ncol:", reports$dims[1], ", nrow:", reports$dims[2]))
+	print(report$basicStats)
+	print("Frecuencia de parejas de variables:")
+	print("Coeficiente de correlación:")
+	print("Indices de similaridad:")
+	for(i in 1:ncol(length(report$tree)))
+	{
+		print(paste("Clasificación en el nivel", i))
+	}
+	
 }
