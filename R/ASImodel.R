@@ -1,6 +1,5 @@
 #' A Reference Class to represent the Statistical Implicative Analysis model.
 #' @name ASImodel
-#' @import methods
 #' @export ASImodel
 #' @exportClass ASImodel
 #' @field data 	External data.

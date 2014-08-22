@@ -1,17 +1,6 @@
-performASISimilarityClassification <-function(data, model = 'pois'){
-	tree <- similarityTree$new()
-	return(callASIalgorithm(data, tree, model))
-}
-
-# performASICohesitiveClassification <-function(data, model='pois'){
-# 	tree <- cohesionTree$new()
-# 	return(callASIAlgorithm( data, tree, model))
-# }
-
-
-callASIAlgorithm <-function( data, tree, model, report=FALSE){
+callASIAlgorithm <-function( data, model, report=FALSE){
 	aData <- ASImodel$new( data, model)
-	treeLevels = array('', ncol(data)-1)
+	tree = array('', ncol(data)-1)
 	for( i in 1:( ncol(data)-1))
 	{
 		S <- aData$getMaximumSimilarity()
@@ -28,21 +17,20 @@ callASIAlgorithm <-function( data, tree, model, report=FALSE){
 		report$cor <-cor(data)
 		report$freq <- NULL
 		report$basicStats <- cbind(apply(data,2,sum), apply(data, 2, mean), apply(data,2, sd))
-		colnames(report$basicStats)<-c("freq","mean","sd")
+		colnames(report$basicStats) <- c("freq","mean","sd")
 		report$tree <- tree
 	}
 }
 
 displayReport <- function(report)
 {
-	print(paste("ncol:", reports$dims[1], ", nrow:", reports$dims[2]))
+	print(paste("ncol:", report$dims[1], ", nrow:", report$dims[2]))
 	print(report$basicStats)
-	print("Frecuencia de parejas de variables:")
-	print("Coeficiente de correlación:")
-	print("Indices de similaridad:")
+	print("Bivariant frequency:")
+	print("Correlation coefficient:")
+	print("Similarity indices:")
 	for(i in 1:ncol(length(report$tree)))
 	{
-		print(paste("Clasificación en el nivel", i))
+		print(paste("Classification at level", i))
 	}
-	
 }
