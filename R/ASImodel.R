@@ -159,6 +159,5 @@ ASImodel <- setRefClass("ASImodel",
 				if((level+nPrimitiveClasses)> ncol(similarityMatrix))
 					stop("Wrong level or level still not computed")
 			}
-
 	)
 )

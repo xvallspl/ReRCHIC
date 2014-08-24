@@ -1,15 +1,29 @@
+#' Functions that performs the algorithm for the Statistical implicative analysis.
+#'
+#' @name callASIAlgorithm
+#'
+#' @param data 		External data.
+#' @param model 	Probability model to use. Binom or pois.
+#' @param report 	If true, displays a report
+#' 
+#' @return report 		Report of the data: algorithm results, hierarchical tree, basic statistic analysis. 
+#' @return newickTree	Hierarchical tree in Newick's format.
+#' 
+#' @author Xavier Valls \email{xaviervallspla@@gmail.com}
+#' @export
+
 callASIAlgorithm <-function( data, model, report=FALSE){
-	aData <- ASImodel$new( data, model)
-	tree = array('', ncol(data)-1)
+	aData <- ASImodel$new(data)
+	tree<-array("",ncol(data)-1)
 	for( i in 1:( ncol(data)-1))
 	{
 		S <- aData$getMaximumSimilarity()
-		#append(tree$genericPairs, aData$findGenericPairAtLevel(S$nodes))
 		aData$joinClasses(S$nodes)
-		S$nodes[S$nodes>ncol(data)] = tree[S$nodes[S$nodes>ncol(data)]-ncol(data)]
+		S$nodes[S$nodes>ncol(aData$data)] = tree[S$nodes[S$nodes>ncol(aData$data)]-ncol(aData$data)]
 		tree[i]=paste("(", S$nodes[1],",",S$nodes[2] ,"):", S$value,sep="")
 	}
-	tree = paste(tree, ';', sep="")
+	newickTree = paste(tree, ';', sep="")
+	
 	if(report){
 		report = list()
 		report$dims <- c(ncol(data), nrow(data))
@@ -19,7 +33,9 @@ callASIAlgorithm <-function( data, model, report=FALSE){
 		report$basicStats <- cbind(apply(data,2,sum), apply(data, 2, mean), apply(data,2, sd))
 		colnames(report$basicStats) <- c("freq","mean","sd")
 		report$tree <- tree
+		return(report)
 	}
+	return(newickTree)
 }
 
 displayReport <- function(report)

@@ -1,1 +1,2 @@
 demo5x10Individuals		Simple case with 10 individuals and 5 binary variables, not using the algorithm function (yet)
+smallAnimalsDemo		Demo with the small Animals dataset. Plotting for the similarity tree provided.
