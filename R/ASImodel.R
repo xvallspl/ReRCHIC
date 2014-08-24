@@ -1,5 +1,6 @@
 #' A Reference Class to represent the Statistical Implicative Analysis model.
 #' @name ASImodel
+#' @import methods
 #' @export ASImodel
 #' @exportClass ASImodel
 #' @field data 	External data.
@@ -43,6 +44,7 @@ ASImodel <- setRefClass("ASImodel",
 			},
 
 			getMaximumSimilarity = function(level = ncol(similarityMatrix)- nPrimitiveClasses){
+				"Gets the máximum similartity at the specified level. By default the last one"
 				simMat <- getSimilarityMatrixAtLevel(level)
 				joined <- getJoinedClassesAtLevel(level)
 				M <-which( similarityMatrix == max(simMat), arr.ind = TRUE )
@@ -57,6 +59,7 @@ ASImodel <- setRefClass("ASImodel",
 			 },
 
 			joinClasses = function(Tuple){
+				"Joins two classes into a new node of the hierarchical tree"
 				if(ncol(similarityMatrix) == (2*ncol(data)-1)) stop("You're already at the last level!")
 			 	computeNewClassSimilarities(Tuple)
 			 	updateJoinMatrix(Tuple)
@@ -104,7 +107,7 @@ ASImodel <- setRefClass("ASImodel",
 				return(list(phi = maxPhi, pos = maxPhiInd))
 			},
 
-			genericImplications = function(genericPair, p = 0.5){				
+			setGenericImplications = function(genericPair, p = 0.5){				
 				for(i in 1:nrow(data))
 				{
 					if(data[i, genericPair[2]]!=1)
@@ -119,10 +122,10 @@ ASImodel <- setRefClass("ASImodel",
 				return( 1/length(classSubclasses) * sum((genericPair$phi-genericImplicationsMatrix[individual,classSubclasses])^2
 								  		  / 1-genericPair$phi))
 			},
-
 			getSignificativeNodes = function(){
+				"Gets the significative nodes of the hierarchical tree"
 				centeredIndices <- rep(NA, ncol(similarityMatrix)-nPrimitiveClasses)
-				for( i in nPrimitiveClasses:ncol(similarityMatrix))
+				for( i in nPrimitiveClasses:(ncol(similarityMatrix)-1))
 				{	c <- computeCardinalAtLevel(i)
 					centeredIndices[i]  <- (c$cardinal- 1/2 * c$nSep * c$nJoin)/
 										sqrt(c$nJoin*c$nSep(c$njoin+c$nSep+1)/12)
@@ -146,6 +149,7 @@ ASImodel <- setRefClass("ASImodel",
 			},
 			#report
 			getSimilarityMatrixAtLevel = function(level){
+				"Returns the similarity matrix at the specified level of the hierarchical tree"
 				.checkIfLevelExists(level)
 				omit <-getJoinedClassesAtLevel(level)
 				if(!length(omit)) 

@@ -3,3 +3,4 @@
 export(ASImodel)
 export(callASIAlgorithm)
 exportClasses(ASImodel)
+import(methods)

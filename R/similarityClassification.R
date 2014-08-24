@@ -20,7 +20,7 @@ callASIAlgorithm <-function( data, model, report=FALSE){
 		S <- aData$getMaximumSimilarity()
 		aData$joinClasses(S$nodes)
 		S$nodes[S$nodes>ncol(aData$data)] = tree[S$nodes[S$nodes>ncol(aData$data)]-ncol(aData$data)]
-		tree[i]=paste("(", S$nodes[1],",",S$nodes[2] ,"):", S$value,sep="")
+		tree[i]=paste("(", S$nodes[1],",",S$nodes[2] ,")")
 	}
 	newickTree = paste(tree, ';', sep="")
 	
