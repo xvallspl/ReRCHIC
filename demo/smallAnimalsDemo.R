@@ -6,6 +6,6 @@
 
 data(animalesSmall)
 require(ape)
-hTree<-callASIAlgorithm(animales)
-phylo<-read.tree(text=htree[length(hTree)])
+ASI<-callASIAlgorithm(animales)
+phylo<-read.tree(text=ASI$tree[length(ASI$tree)])
 plot(phylo, use.edge.length=FALSE, direction="upwards")

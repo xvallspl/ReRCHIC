@@ -22,7 +22,9 @@ callASIAlgorithm <-function( data, model, report=FALSE){
 		S$nodes[S$nodes>ncol(aData$data)] = tree[S$nodes[S$nodes>ncol(aData$data)]-ncol(aData$data)]
 		tree[i]=paste("(", S$nodes[1],",",S$nodes[2] ,")")
 	}
+
 	newickTree = paste(tree, ';', sep="")
+	significativeNodes<-aData$getSignificativeNodes()
 	
 	if(report){
 		report = list()
@@ -32,10 +34,11 @@ callASIAlgorithm <-function( data, model, report=FALSE){
 		report$freq <- NULL
 		report$basicStats <- cbind(apply(data,2,sum), apply(data, 2, mean), apply(data,2, sd))
 		colnames(report$basicStats) <- c("freq","mean","sd")
-		report$tree <- tree
+		report$tree <- newickTree
+		report$significativeNodes <- significativeNodes
 		return(report)
 	}
-	return(newickTree)
+	return(list(tree = newickTree, significativeNodes= significativeNodes))
 }
 
 displayReport <- function(report)

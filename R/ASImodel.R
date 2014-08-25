@@ -122,23 +122,23 @@ ASImodel <- setRefClass("ASImodel",
 				return( 1/length(classSubclasses) * sum((genericPair$phi-genericImplicationsMatrix[individual,classSubclasses])^2
 								  		  / 1-genericPair$phi))
 			},
+
 			getSignificativeNodes = function(){
 				"Gets the significative nodes of the hierarchical tree"
 				centeredIndices <- rep(NA, ncol(similarityMatrix)-nPrimitiveClasses)
-				for( i in nPrimitiveClasses:(ncol(similarityMatrix)-1))
+				for( i in 1:(ncol(similarityMatrix)-nPrimitiveClasses))
 				{	c <- computeCardinalAtLevel(i)
 					centeredIndices[i]  <- (c$cardinal- 1/2 * c$nSep * c$nJoin)/
-										sqrt(c$nJoin*c$nSep(c$njoin+c$nSep+1)/12)
+										sqrt(c$nJoin*c$nSep*(c$nJoin+c$nSep+1)/12)
 				}
-				v <- diff(diff(centeredIndex))
-				localMaximumPositions <- c(1, which(diff(sign(v))!=0))
+				v <- diff(diff(centeredIndices))
+				localMaximumPositions <- which(diff(sign(v))!=0)
 				return(localMaximumPositions)
 			},
 
 			computeCardinalAtLevel = function(level){
 				primJoined <- getJoinedClassesAtLevel(level, primitivesOnly = TRUE)
-				primSepparated <- (1:nPrimitiveClasses)[-primaryJoined]
-				
+				primSepparated <- (1:nPrimitiveClasses)[-primJoined]
 				SimilaritiesJoined     <- similarityMatrix[primJoined, primJoined]
 				SimilaritiesSepparated <- similarityMatrix[primSepparated, primSepparated]
 				# Mann - Whitney
