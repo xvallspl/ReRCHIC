@@ -22,12 +22,12 @@ ASImodel <- setRefClass("ASImodel",
 					stop("Specified probability distribution model not implemented")
 				
 				data <<- ExternalData
-				nPrimitiveClasses <<- ncol(data)
+				nPrimitiveClasses <<- ncol(ExternalData)
 				.self$model <<- model
 				initializeSimilarityMatrix()
 				joinMatrix <<- matrix(NaN, nPrimitiveClasses, nPrimitiveClasses)
 				diag(joinMatrix)<<-(Inf)
-				genericImplicationsMatrix <<- matrix(1, nrow(data), nPrimitiveClasses-1)
+				genericImplicationsMatrix <<- matrix(1, nrow(data), 2*nPrimitiveClasses-1)
 			},	
 
 			initializeSimilarityMatrix = function(){
@@ -60,9 +60,15 @@ ASImodel <- setRefClass("ASImodel",
 
 			joinClasses = function(Tuple){
 				"Joins two classes into a new node of the hierarchical tree"
-				if(ncol(similarityMatrix) == (2*ncol(data)-1)) stop("You're already at the last level!")
+				if(ncol(similarityMatrix) == (2*nPrimitiveClasses-1)) stop("You're already at the last level!")
+				updateData(Tuple)
 			 	computeNewClassSimilarities(Tuple)
 			 	updateJoinMatrix(Tuple)
+			},
+
+			updateData = function(Tuple){
+				col <- (data[, Tuple[1]] & data[, Tuple[2]])
+				data <<- cbind(data, col)
 			},
 
 			computeNewClassSimilarities = function(Tuple){
@@ -107,7 +113,7 @@ ASImodel <- setRefClass("ASImodel",
 				return(list(phi = maxPhi, pos = maxPhiInd))
 			},
 
-			setGenericImplications = function(genericPair, p = 0.5){				
+			setGenericImplications = function(genericPair, level, p = 0.5){				
 				for(i in 1:nrow(data))
 				{
 					if(data[i, genericPair[2]]!=1)
