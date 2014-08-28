@@ -11,28 +11,31 @@
 #' @field nPrimitiveClasses Number of primitive classes
 
 ASImodel <- setRefClass("ASImodel",
-	fields = c("data", "model", "joinMatrix", "similarityMatrix","genericImplicationsMatrix", "nPrimitiveClasses"),
+	fields = c("data", "model", "levels", "joinMatrix", "similarityMatrix","genericImplicationsMatrix", "nPrimitiveClasses", "nIndividuals"),
 	methods = list( 
 			
-			initialize = function( ExternalData, model = "pois" )
+			initialize = function( externalData, model = "pois" )
 			{
-				if(!is.matrix(ExternalData))
+				if(!is.matrix(externalData))
 					 stop("Provided data should be a matrix")
 				if(!model %in% c("pois", "binom")) 
 					stop("Specified probability distribution model not implemented")
 				
-				data <<- ExternalData
-				nPrimitiveClasses <<- ncol(ExternalData)
+				nIndividuals <<- nrow(externalData)
+				nPrimitiveClasses <<- ncol(externalData)
+				data <<- matrix(NaN, nIndividuals, 2*nPrimitiveClasses-1)
+				data[,1:nPrimitiveClasses] <<- externalData
 				.self$model <<- model
-				initializeSimilarityMatrix()
+				initializeSimilarityMatrix(externalData)
 				joinMatrix <<- matrix(NaN, nPrimitiveClasses, nPrimitiveClasses)
 				diag(joinMatrix)<<-(Inf)
 				genericImplicationsMatrix <<- matrix(1, nrow(data), 2*nPrimitiveClasses-1)
+				levels <<- 0
 			},	
 
-			initializeSimilarityMatrix = function(){
-			  	nBinaryPresences <- apply(data,2,'sum')
-				nBinaryCopresences <- crossprod(data, data)
+			initializeSimilarityMatrix = function(externalData){
+			  	nBinaryPresences <- apply(externalData,2,'sum')
+				nBinaryCopresences <- crossprod(externalData, externalData)
 			  	probabilityOfCopresence <- tcrossprod(nBinaryPresences, nBinaryPresences)/nPrimitiveClasses^2 
 
 				if(model == 'pois'){
@@ -61,17 +64,16 @@ ASImodel <- setRefClass("ASImodel",
 			joinClasses = function(Tuple){
 				"Joins two classes into a new node of the hierarchical tree"
 				if(ncol(similarityMatrix) == (2*nPrimitiveClasses-1)) stop("You're already at the last level!")
-				updateData(Tuple)
-			 	computeNewClassSimilarities(Tuple)
-			 	updateJoinMatrix(Tuple)
+				.updateData(Tuple)
+			 	.computeNewClassSimilarities(Tuple)
+			 	.updateJoinMatrix(Tuple)
 			},
 
-			updateData = function(Tuple){
-				col <- (data[, Tuple[1]] & data[, Tuple[2]])
-				data <<- cbind(data, col)
+			.updateData = function(Tuple, level=levels){
+				data[,nPrimitiveClasses+level] <<- (data[, Tuple[1]] & data[, Tuple[2]])
 			},
 
-			computeNewClassSimilarities = function(Tuple){
+			.computeNewClassSimilarities = function(Tuple){
 				newClassRow <- newClassCol <- array(0,ncol(similarityMatrix))
 				joinedWithFirst  <- which(!(joinMatrix[Tuple[1], ] %in% NaN))
 				joinedWithSecond <- which(!(joinMatrix[Tuple[2], ] %in% NaN))
@@ -87,9 +89,10 @@ ASImodel <- setRefClass("ASImodel",
 				}
 				similarityMatrix <<- rbind(cbind(similarityMatrix, newClassCol), c(newClassRow,0))
 				colnames(similarityMatrix)[ncol(similarityMatrix)]<<-(ncol(similarityMatrix)-nPrimitiveClasses)
+				levels <<- levels+1
 			},
 			
-			updateJoinMatrix = function(Tuple){
+			.updateJoinMatrix = function(Tuple){
 				newClass <- array(NaN, ncol(joinMatrix))
 				joinedWithFirst	 <- which( !(joinMatrix[Tuple[1], ] %in% NaN))
 				joinedWithSecond <- which( !(joinMatrix[Tuple[2], ] %in% NaN))
@@ -100,12 +103,12 @@ ASImodel <- setRefClass("ASImodel",
 				colnames(joinMatrix)[ncol(joinMatrix)]<<-(ncol(similarityMatrix)-nPrimitiveClasses)
 			},
 
-			findGenericPairAtLevel = function(Tuple, level=ncol(similarityMatrix)){
+			findGenericPairAtLevel = function(Tuple, level=levels){
 				joinedWithFirst  <- which(!(joinMatrix[Tuple[1],] %in% NaN))
 				joinedWithSecond <- which(!(joinMatrix[Tuple[2],] %in% NaN))
 				
-				joinedWithFirst  <- joinedWithFirst[joinedWithFirst < level]
-				joinedWithSecond <- joinedWithSecond[joinedWithSecond < level]
+				joinedWithFirst  <- joinedWithFirst[joinedWithFirst < (nPrimitiveClasses+level)]
+				joinedWithSecond <- joinedWithSecond[joinedWithSecond < (nPrimitiveClasses+level)]
 
 				maxPhi <- max(similarityMatrix[joinedWithFirst, joinedWithSecond]) 
 				maxPhiInd <- which(similarityMatrix == maxPhi, arr.ind=T)[1,]
