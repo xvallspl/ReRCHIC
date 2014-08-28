@@ -24,12 +24,16 @@ A Reference Class to represent the Statistical Implicative Analysis model.
 \section{Methods}{
 
 \describe{
-\item{\code{getMaximumSimilarity(level = ncol(similarityMatrix) - nPrimitiveClasses)}}{Gets the máximum similartity at the specified level. By default the last one}
+\item{\code{getMaximumSimilarity(level = ncol(similarityMatrix) - nPrimitiveClasses)}}{Gets the maximum similartity at the specified level. By default the last one}
 
 \item{\code{getSignificativeNodes()}}{Gets the significative nodes of the hierarchical tree}
 
 \item{\code{getSimilarityMatrixAtLevel(level)}}{Returns the similarity matrix at the specified level of the hierarchical tree}
 
 \item{\code{joinClasses(Tuple)}}{Joins two classes into a new node of the hierarchical tree}
+
+\item{\code{setContributionAtLevel(genericPair, level = levels)}}{Computes the contribution of each individual for a certain class}
+
+\item{\code{setTypicalityAtLevel(genericPair, level = levels)}}{Computes the typicality of each individual for a certain class}
 }}
 

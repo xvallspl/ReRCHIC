@@ -1,6 +1,6 @@
 #' A Reference Class to represent the Statistical Implicative Analysis model.
 #' @name ASImodel
-#' @import methods
+# @import methods
 #' @export ASImodel
 #' @exportClass ASImodel
 #' @field data 	External data.
@@ -11,7 +11,7 @@
 #' @field nPrimitiveClasses Number of primitive classes
 
 ASImodel <- setRefClass("ASImodel",
-	fields = c("data", "model", "levels", "joinMatrix", "similarityMatrix","genericImplicationsMatrix", "nPrimitiveClasses", "nIndividuals"),
+	fields = c("data", "model", "levels", "joinMatrix", "similarityMatrix","genericImplicationsMatrix", "nPrimitiveClasses", "contributionMatrix","typicalityMatrix","nIndividuals"),
 	methods = list( 
 			
 			initialize = function( externalData, model = "pois" )
@@ -30,6 +30,8 @@ ASImodel <- setRefClass("ASImodel",
 				joinMatrix <<- matrix(NaN, nPrimitiveClasses, nPrimitiveClasses)
 				diag(joinMatrix)<<-(Inf)
 				genericImplicationsMatrix <<- matrix(1, nrow(data), 2*nPrimitiveClasses-1)
+				contributionMatrix <<- matrix(NaN, nrow(data), nPrimitiveClasses-1)
+				typicalityMatrix <<- matrix(NaN, nrow(data), nPrimitiveClasses-1)
 				levels <<- 0
 			},	
 
@@ -47,7 +49,7 @@ ASImodel <- setRefClass("ASImodel",
 			},
 
 			getMaximumSimilarity = function(level = ncol(similarityMatrix)- nPrimitiveClasses){
-				"Gets the máximum similartity at the specified level. By default the last one"
+				"Gets the maximum similartity at the specified level. By default the last one"
 				simMat <- getSimilarityMatrixAtLevel(level)
 				joined <- getJoinedClassesAtLevel(level)
 				M <-which( similarityMatrix == max(simMat), arr.ind = TRUE )
@@ -132,6 +134,12 @@ ASImodel <- setRefClass("ASImodel",
 								  		  / 1-genericPair$phi))
 			},
 
+			distanceTilde2 = function(individual, class){
+				joinedWithClass <- which(!(joinMatrix[class,] %in% NaN))
+				classSubclasses <- joinMatrix[joinedWithClass > nPrimitiveClasses]
+				return( 1/length(classSubclasses) * sum((1-genericImplicationsMatrix[individual,classSubclasses])^2))
+			},
+
 			getSignificativeNodes = function(){
 				"Gets the significative nodes of the hierarchical tree"
 				centeredIndices <- rep(NA, ncol(similarityMatrix)-nPrimitiveClasses)
@@ -171,6 +179,25 @@ ASImodel <- setRefClass("ASImodel",
 			.checkIfLevelExists = function(level){
 				if((level+nPrimitiveClasses)> ncol(similarityMatrix))
 					stop("Wrong level or level still not computed")
+			},
+
+			setTypicalityAtLevel = function(genericPair, level=levels){				
+				"Computes the typicality of each individual for a certain class"
+				for(i in 1:nrow(data))
+				{
+					typicalityMatrix[i,level]<<-(1-sqrt(distance2(i, level, genericPair)))
+				}
+				joinedWithClass <- which(!(joinMatrix[class,] %in% NaN))
+				typicalityMatrix[,level]<<- typicalityMatrix[,level]/ max(typicalityMatrix[joinedWithClass,level])
+
+			},
+
+			setContributionAtLevel = function(genericPair, level=levels){
+				"Computes the contribution of each individual for a certain class"				
+				for(i in 1:nrow(data))
+				{
+					contributionMatrix[i,level]<<-(1 - sqrt(deltaTilde2(i, level)))
+				}
 			}
 	)
 )
