@@ -23,15 +23,14 @@ ASImodel <- setRefClass("ASImodel",
 				
 				nIndividuals <<- nrow(externalData)
 				nPrimitiveClasses <<- ncol(externalData)
-				data <<- matrix(NaN, nIndividuals, 2*nPrimitiveClasses-1)
-				data[,1:nPrimitiveClasses] <<- externalData
+				data<<- externalData
 				.self$model <<- model
 				initializeSimilarityMatrix(externalData)
 				joinMatrix <<- matrix(NaN, nPrimitiveClasses, nPrimitiveClasses)
 				diag(joinMatrix)<<-(Inf)
-				genericImplicationsMatrix <<- matrix(1, nrow(data), 2*nPrimitiveClasses-1)
-				contributionMatrix <<- matrix(NaN, nrow(data), nPrimitiveClasses-1)
-				typicalityMatrix <<- matrix(NaN, nrow(data), nPrimitiveClasses-1)
+				genericImplicationsMatrix <<- matrix(1, nIndividuals, 2*nPrimitiveClasses-1)
+				contributionMatrix <<- matrix(NaN, nIndividuals, nPrimitiveClasses-1)
+				typicalityMatrix <<- matrix(NaN, nIndividuals, nPrimitiveClasses-1)
 				levels <<- 0
 			},	
 
@@ -63,22 +62,24 @@ ASImodel <- setRefClass("ASImodel",
 				return(unique(array(which(joinMatrix[1:n, 1:n] <= level , arr.ind = T))))
 			 },
 
+			 joinedWithClass = function(class, at.level=levels, primitivesOnly = FALSE){
+			 	.checkIfLevelExists(at.level)
+				if(!primitivesOnly) n <- nPrimitiveClasses+at.level else n <- nPrimitiveClasses
+			 	return(which(!(joinMatrix[class, 1:n] %in% NaN)))
+			 },
+
 			joinClasses = function(Tuple){
 				"Joins two classes into a new node of the hierarchical tree"
 				if(ncol(similarityMatrix) == (2*nPrimitiveClasses-1)) stop("You're already at the last level!")
-				.updateData(Tuple)
 			 	.computeNewClassSimilarities(Tuple)
 			 	.updateJoinMatrix(Tuple)
-			},
-
-			.updateData = function(Tuple, level=levels){
-				data[,nPrimitiveClasses+level] <<- (data[, Tuple[1]] & data[, Tuple[2]])
+			 	levels <<- levels+1
 			},
 
 			.computeNewClassSimilarities = function(Tuple){
 				newClassRow <- newClassCol <- array(0,ncol(similarityMatrix))
-				joinedWithFirst  <- which(!(joinMatrix[Tuple[1], ] %in% NaN))
-				joinedWithSecond <- which(!(joinMatrix[Tuple[2], ] %in% NaN))
+				joinedWithFirst  <- joinedWithClass(Tuple[1])
+				joinedWithSecond <- joinedWithClass(Tuple[2])
 				joinedWithTuple <-c(joinedWithFirst,joinedWithSecond)
 				primitivesJoinedWithTuple <- joinedWithTuple[joinedWithTuple<(nPrimitiveClasses+1)]
 				for( i in 1:ncol(similarityMatrix)){
@@ -90,14 +91,13 @@ ASImodel <- setRefClass("ASImodel",
 					}
 				}
 				similarityMatrix <<- rbind(cbind(similarityMatrix, newClassCol), c(newClassRow,0))
-				colnames(similarityMatrix)[ncol(similarityMatrix)]<<-(ncol(similarityMatrix)-nPrimitiveClasses)
-				levels <<- levels+1
+				colnames(similarityMatrix)[ncol(similarityMatrix)]<<-(ncol(similarityMatrix)-nPrimitiveClasses)				
 			},
 			
 			.updateJoinMatrix = function(Tuple){
 				newClass <- array(NaN, ncol(joinMatrix))
-				joinedWithFirst	 <- which( !(joinMatrix[Tuple[1], ] %in% NaN))
-				joinedWithSecond <- which( !(joinMatrix[Tuple[2], ] %in% NaN))
+				joinedWithFirst  <- joinedWithClass(Tuple[1])
+				joinedWithSecond <- joinedWithClass(Tuple[2])
 				joinMatrix[joinedWithFirst,joinedWithSecond] <<- ncol(similarityMatrix)-nPrimitiveClasses
 				joinMatrix[joinedWithSecond,joinedWithFirst] <<- ncol(similarityMatrix)-nPrimitiveClasses	#Simmetry
 				#newClass[c(joinedWithFirst, joinedWithSecond)] <- ncol(similarityMatrix)-nPrimitiveClasses
@@ -106,8 +106,8 @@ ASImodel <- setRefClass("ASImodel",
 			},
 
 			findGenericPairAtLevel = function(Tuple, level=levels){
-				joinedWithFirst  <- which(!(joinMatrix[Tuple[1],] %in% NaN))
-				joinedWithSecond <- which(!(joinMatrix[Tuple[2],] %in% NaN))
+				joinedWithFirst  <- joinedWithClass(Tuple[1])
+				joinedWithSecond <- joinedWithClass(Tuple[2])
 				
 				joinedWithFirst  <- joinedWithFirst[joinedWithFirst < (nPrimitiveClasses+level)]
 				joinedWithSecond <- joinedWithSecond[joinedWithSecond < (nPrimitiveClasses+level)]
@@ -128,14 +128,14 @@ ASImodel <- setRefClass("ASImodel",
 			},
 
 			distance2 = function(individual, class, genericPair){
-				joinedWithClass <- which(!(joinMatrix[class,] %in% NaN))
+				joinedWithClass <- joinedWithClass(class)
 				classSubclasses <- joinMatrix[joinedWithClass > nPrimitiveClasses]
 				return( 1/length(classSubclasses) * sum((genericPair$phi-genericImplicationsMatrix[individual,classSubclasses])^2
 								  		  / 1-genericPair$phi))
 			},
 
 			distanceTilde2 = function(individual, class){
-				joinedWithClass <- which(!(joinMatrix[class,] %in% NaN))
+				joinedWithClass <- joinedWithClass(class)
 				classSubclasses <- joinMatrix[joinedWithClass > nPrimitiveClasses]
 				return( 1/length(classSubclasses) * sum((1-genericImplicationsMatrix[individual,classSubclasses])^2))
 			},

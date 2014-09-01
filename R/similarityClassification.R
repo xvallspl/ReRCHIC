@@ -19,8 +19,8 @@ callASIAlgorithm <-function( data, model, report=FALSE){
 	{
 		S <- aData$getMaximumSimilarity()
 		aData$joinClasses(S$nodes)
-		genericPair<- aData$findGenericPairAtLevel(S$nodes)
-		aData$setGenericImplications(genericPair$pos, i)
+		#genericPair<- aData$findGenericPairAtLevel(S$nodes)
+		#aData$setGenericImplications(genericPair$pos, i)
 		S$nodes[S$nodes> aData$nPrimitiveClasses] = tree[S$nodes[S$nodes>aData$nPrimitiveClasses]-aData$nPrimitiveClasses]
 		tree[i]=paste("(", S$nodes[1],",",S$nodes[2] ,"):", S$value,sep="")
 	}
