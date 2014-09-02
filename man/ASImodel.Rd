@@ -5,6 +5,8 @@
 \title{A Reference Class to represent the Statistical Implicative Analysis model.}
 \description{
 A Reference Class to represent the Statistical Implicative Analysis model.
+
+A Reference Class to represent the Statistical Implicative Analysis model.
 }
 \section{Fields}{
 
@@ -20,20 +22,32 @@ A Reference Class to represent the Statistical Implicative Analysis model.
 \item{\code{genericImplicationsMatrix}}{Matrix of generic Implications}
 
 \item{\code{nPrimitiveClasses}}{Number of primitive classes}
+
+\item{\code{data}}{External data.}
+
+\item{\code{model}}{Probability model to use. Binom or pois.}
+
+\item{\code{joinMatrix}}{Matrix of joint classes}
+
+\item{\code{similarityMatrix}}{Matrix of bivariant similarities.}
+
+\item{\code{genericImplicationsMatrix}}{Matrix of generic Implications}
+
+\item{\code{nPrimitiveClasses}}{Number of primitive classes}
 }}
 \section{Methods}{
 
 \describe{
-\item{\code{getMaximumSimilarity(level = ncol(similarityMatrix) - nPrimitiveClasses)}}{Gets the maximum similartity at the specified level. By default the last one}
-
-\item{\code{getSignificativeNodes()}}{Gets the significative nodes of the hierarchical tree}
+\item{\code{getMaximumSimilarity(level = levels)}}{Gets the maximum similartity at the specified level. By default the last one}
 
 \item{\code{getSimilarityMatrixAtLevel(level)}}{Returns the similarity matrix at the specified level of the hierarchical tree}
 
 \item{\code{joinClasses(Tuple)}}{Joins two classes into a new node of the hierarchical tree}
 
-\item{\code{setContributionAtLevel(genericPair, level = levels)}}{Computes the contribution of each individual for a certain class}
+\item{\code{getMaximumSimilarity(level = levels)}}{Gets the maximum similartity at the specified level. By default the last one}
 
-\item{\code{setTypicalityAtLevel(genericPair, level = levels)}}{Computes the typicality of each individual for a certain class}
+\item{\code{getSimilarityMatrixAtLevel(level)}}{Returns the similarity matrix at the specified level of the hierarchical tree}
+
+\item{\code{joinClasses(Tuple)}}{Joins two classes into a new node of the hierarchical tree}
 }}
 

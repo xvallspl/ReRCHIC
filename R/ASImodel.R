@@ -11,7 +11,7 @@
 #' @field nPrimitiveClasses Number of primitive classes
 
 ASImodel <- setRefClass("ASImodel",
-	fields = c("data", "model", "levels", "joinMatrix", "similarityMatrix","genericImplicationsMatrix", "nPrimitiveClasses", "contributionMatrix","typicalityMatrix","nIndividuals"),
+	fields = c("data", "model", "levels", "joinMatrix", "similarityMatrix","genericImplicationsMatrix", "joinedClasses","nPrimitiveClasses", "contributionMatrix","typicalityMatrix","nIndividuals"),
 	methods = list( 
 			
 			initialize = function( externalData, model = "pois" )
@@ -28,9 +28,10 @@ ASImodel <- setRefClass("ASImodel",
 				initializeSimilarityMatrix(externalData)
 				joinMatrix <<- matrix(NaN, nPrimitiveClasses, nPrimitiveClasses)
 				diag(joinMatrix)<<-(Inf)
-				genericImplicationsMatrix <<- matrix(1, nIndividuals, 2*nPrimitiveClasses-1)
+				genericImplicationsMatrix <<- matrix(1, nIndividuals, nPrimitiveClasses-1)
 				contributionMatrix <<- matrix(NaN, nIndividuals, nPrimitiveClasses-1)
 				typicalityMatrix <<- matrix(NaN, nIndividuals, nPrimitiveClasses-1)
+				joinedClasses<<-list()
 				levels <<- 0
 			},	
 
@@ -47,19 +48,24 @@ ASImodel <- setRefClass("ASImodel",
 				diag(similarityMatrix)<<-0
 			},
 
-			getMaximumSimilarity = function(level = ncol(similarityMatrix)- nPrimitiveClasses){
+			getMaximumSimilarity = function(at.level = levels){
 				"Gets the maximum similartity at the specified level. By default the last one"
-				simMat <- getSimilarityMatrixAtLevel(level)
-				joined <- getJoinedClassesAtLevel(level)
+				simMat <- getSimilarityMatrixAtLevel(at.level)
+				joined <- getJoinedClasses(at.level)
 				M <-which( similarityMatrix == max(simMat), arr.ind = TRUE )
 				MnotJoined<-apply( M, 1, function(x){all(!(x %in%joined))})
 			 	return(list(nodes = M[MnotJoined,][1, ], value = max(simMat)))
 			 },
 
-			 getJoinedClassesAtLevel = function(level, primitivesOnly = FALSE){
-			 	.checkIfLevelExists(level)
-				if(!primitivesOnly) n <- nPrimitiveClasses+level else n <- nPrimitiveClasses
-				return(unique(array(which(joinMatrix[1:n, 1:n] <= level , arr.ind = T))))
+			 getJoinedClasses = function(at.level=levels, primitivesOnly = FALSE){
+			 	.checkIfLevelExists(at.level)
+			 	if(at.level==0) 
+			 		ret=c()
+			 	else{
+				 	ret<-joinedClasses[[at.level]]
+					if(primitivesOnly) ret<-ret[ret<=nPrimitiveClasses]
+				}
+				return(ret)
 			 },
 
 			 joinedWithClass = function(class, at.level=levels, primitivesOnly = FALSE){
@@ -74,6 +80,11 @@ ASImodel <- setRefClass("ASImodel",
 			 	.computeNewClassSimilarities(Tuple)
 			 	.updateJoinMatrix(Tuple)
 			 	levels <<- levels+1
+			 	if(levels>1)
+			 	{
+			 		joinedClasses[[levels]]<<-c(joinedClasses[[levels-1]],Tuple)
+			 	}
+			 	else joinedClasses[[levels]]<<-Tuple
 			},
 
 			.computeNewClassSimilarities = function(Tuple){
@@ -98,11 +109,11 @@ ASImodel <- setRefClass("ASImodel",
 				newClass <- array(NaN, ncol(joinMatrix))
 				joinedWithFirst  <- joinedWithClass(Tuple[1])
 				joinedWithSecond <- joinedWithClass(Tuple[2])
-				joinMatrix[joinedWithFirst,joinedWithSecond] <<- ncol(similarityMatrix)-nPrimitiveClasses
-				joinMatrix[joinedWithSecond,joinedWithFirst] <<- ncol(similarityMatrix)-nPrimitiveClasses	#Simmetry
-				#newClass[c(joinedWithFirst, joinedWithSecond)] <- ncol(similarityMatrix)-nPrimitiveClasses
+				joinMatrix[joinedWithFirst,joinedWithSecond] <<- levels+1
+				joinMatrix[joinedWithSecond,joinedWithFirst] <<- levels+1	#Simmetry
+				newClass[c(joinedWithFirst, joinedWithSecond)] <- levels+1
 				joinMatrix <<- rbind(cbind(joinMatrix, newClass), c(newClass, Inf))
-				colnames(joinMatrix)[ncol(joinMatrix)]<<-(ncol(similarityMatrix)-nPrimitiveClasses)
+				colnames(joinMatrix)[ncol(joinMatrix)] <<-levels+1
 			},
 
 			findGenericPairAtLevel = function(Tuple, level=levels){
@@ -154,7 +165,7 @@ ASImodel <- setRefClass("ASImodel",
 			},
 
 			computeCardinalAtLevel = function(level){
-				primJoined <- getJoinedClassesAtLevel(level, primitivesOnly = TRUE)
+				primJoined <- getJoinedClasses(level, primitivesOnly = TRUE)
 				primSepparated <- (1:nPrimitiveClasses)[-primJoined]
 				SimilaritiesJoined     <- similarityMatrix[primJoined, primJoined]
 				SimilaritiesSepparated <- similarityMatrix[primSepparated, primSepparated]
@@ -168,9 +179,9 @@ ASImodel <- setRefClass("ASImodel",
 			getSimilarityMatrixAtLevel = function(level){
 				"Returns the similarity matrix at the specified level of the hierarchical tree"
 				.checkIfLevelExists(level)
-				omit <-getJoinedClassesAtLevel(level)
+				omit <-getJoinedClasses(at.level=level)
 				if(!length(omit)) 
-					simMat <- similarityMatrix[1:(nPrimitiveClasses+level), 1:(nPrimitiveClasses+level)]
+					simMat <- similarityMatrix[1:nPrimitiveClasses, 1:nPrimitiveClasses]
 				else 
 					simMat <- similarityMatrix[1:(nPrimitiveClasses+level),1:(nPrimitiveClasses+level)][-omit, -omit] 
 				return(simMat)
