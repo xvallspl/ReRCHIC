@@ -50,7 +50,7 @@ ASImodel <- setRefClass("ASImodel",
 
 			getMaximumSimilarity = function(at.level = levels){
 				"Gets the maximum similartity at the specified level. By default the last one"
-				simMat <- getSimilarityMatrixAtLevel(at.level)
+				simMat <- getSimilarityMatrix(at.level)
 				joined <- getJoinedClasses(at.level)
 				M <-which( similarityMatrix == max(simMat), arr.ind = TRUE )
 				MnotJoined<-apply( M, 1, function(x){all(!(x %in%joined))})
@@ -116,12 +116,9 @@ ASImodel <- setRefClass("ASImodel",
 				colnames(joinMatrix)[ncol(joinMatrix)] <<-levels+1
 			},
 
-			findGenericPairAtLevel = function(Tuple, level=levels){
-				joinedWithFirst  <- joinedWithClass(Tuple[1])
-				joinedWithSecond <- joinedWithClass(Tuple[2])
-				
-				joinedWithFirst  <- joinedWithFirst[joinedWithFirst < (nPrimitiveClasses+level)]
-				joinedWithSecond <- joinedWithSecond[joinedWithSecond < (nPrimitiveClasses+level)]
+			findGenericPair = function(Tuple, at.level=levels){
+				joinedWithFirst  <- joinedWithClass(Tuple[1], at.level, primitivesOnly=TRUE)
+				joinedWithSecond <- joinedWithClass(Tuple[2], at.level, primitivesOnly=TRUE)
 
 				maxPhi <- max(similarityMatrix[joinedWithFirst, joinedWithSecond]) 
 				maxPhiInd <- which(similarityMatrix == maxPhi, arr.ind=T)[1,]
@@ -155,7 +152,7 @@ ASImodel <- setRefClass("ASImodel",
 				"Gets the significative nodes of the hierarchical tree"
 				centeredIndices <- rep(NA, ncol(similarityMatrix)-nPrimitiveClasses)
 				for( i in 1:(ncol(similarityMatrix)-nPrimitiveClasses))
-				{	c <- computeCardinalAtLevel(i)
+				{	c <- computeCardinal(i)
 					centeredIndices[i]  <- (c$cardinal- 1/2 * c$nSep * c$nJoin)/
 										sqrt(c$nJoin*c$nSep*(c$nJoin+c$nSep+1)/12)
 				}
@@ -164,8 +161,8 @@ ASImodel <- setRefClass("ASImodel",
 				return(localMaximumPositions)
 			},
 
-			computeCardinalAtLevel = function(level){
-				primJoined <- getJoinedClasses(level, primitivesOnly = TRUE)
+			computeCardinal = function(at.level=levels){
+				primJoined <- getJoinedClasses(at.level, primitivesOnly = TRUE)
 				primSepparated <- (1:nPrimitiveClasses)[-primJoined]
 				SimilaritiesJoined     <- similarityMatrix[primJoined, primJoined]
 				SimilaritiesSepparated <- similarityMatrix[primSepparated, primSepparated]
@@ -176,14 +173,14 @@ ASImodel <- setRefClass("ASImodel",
 				return(list( cardinal= cardinal, nJoin = length(SimilaritiesJoined)/2, nSep = length(SimilaritiesSepparated)/2))
 			},
 			#report
-			getSimilarityMatrixAtLevel = function(level){
+			getSimilarityMatrix = function(at.level=levels){
 				"Returns the similarity matrix at the specified level of the hierarchical tree"
-				.checkIfLevelExists(level)
-				omit <-getJoinedClasses(at.level=level)
+				.checkIfLevelExists(at.level)
+				omit <-getJoinedClasses(at.level)
 				if(!length(omit)) 
 					simMat <- similarityMatrix[1:nPrimitiveClasses, 1:nPrimitiveClasses]
 				else 
-					simMat <- similarityMatrix[1:(nPrimitiveClasses+level),1:(nPrimitiveClasses+level)][-omit, -omit] 
+					simMat <- similarityMatrix[1:(nPrimitiveClasses+at.level),1:(nPrimitiveClasses+at.level)][-omit, -omit] 
 				return(simMat)
 			},
 
@@ -192,22 +189,22 @@ ASImodel <- setRefClass("ASImodel",
 					stop("Wrong level or level still not computed")
 			},
 
-			setTypicalityAtLevel = function(genericPair, level=levels){				
+			setTypicality = function(genericPair, at.level=levels){				
 				"Computes the typicality of each individual for a certain class"
 				for(i in 1:nrow(data))
 				{
-					typicalityMatrix[i,level]<<-(1-sqrt(distance2(i, level, genericPair)))
+					typicalityMatrix[i,at.level]<<-(1-sqrt(distance2(i, at.level, genericPair)))
 				}
 				joinedWithClass <- which(!(joinMatrix[class,] %in% NaN))
-				typicalityMatrix[,level]<<- typicalityMatrix[,level]/ max(typicalityMatrix[joinedWithClass,level])
+				typicalityMatrix[,at.level]<<- typicalityMatrix[,at.level]/ max(typicalityMatrix[joinedWithClass,at.level])
 
 			},
 
-			setContributionAtLevel = function(genericPair, level=levels){
+			setContribution = function(genericPair, at.level=levels){
 				"Computes the contribution of each individual for a certain class"				
 				for(i in 1:nrow(data))
 				{
-					contributionMatrix[i,level]<<-(1 - sqrt(deltaTilde2(i, level)))
+					contributionMatrix[i,at.level]<<-(1 - sqrt(deltaTilde2(i, at.level)))
 				}
 			}
 	)
