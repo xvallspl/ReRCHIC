@@ -12,7 +12,7 @@ for( i in 1:( ncol(data)-1))
 {
 	S <- aData$getMaximumSimilarity()
 	aData$joinClasses(S$nodes)
-	genericPair<- aData$findGenericPair(S$nodes)
+	genericPair<- aData$findGenericPair(i)
 	aData$setGenericImplications(genericPair$pos, i)
 	S$nodes[S$nodes>ncol(data)] = tree[S$nodes[S$nodes>ncol(data)]-ncol(data)]
 	tree[i]=paste("(", S$nodes[1],",",S$nodes[2] ,"):", S$value,sep="")
