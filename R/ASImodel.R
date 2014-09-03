@@ -71,7 +71,9 @@ ASImodel <- setRefClass("ASImodel",
 			 joinedWithClass = function(class, at.level=levels, primitivesOnly = FALSE){
 			 	.checkIfLevelExists(at.level)
 				if(!primitivesOnly) n <- nPrimitiveClasses+at.level else n <- nPrimitiveClasses
-			 	return(which(!(joinMatrix[class, 1:n] %in% NaN)))
+				joined<-which(!(joinMatrix[class, 1:n] %in% NaN))
+			 	return(c(class ,which(joinMatrix[class, joined]<= at.level)))
+			 	#return(joined)
 			 },
 
 			joinClasses = function(Tuple){
@@ -204,7 +206,7 @@ ASImodel <- setRefClass("ASImodel",
 				"Computes the contribution of each individual for a certain class"				
 				for(i in 1:nrow(data))
 				{
-					contributionMatrix[i,at.level]<<-(1 - sqrt(deltaTilde2(i, at.level)))
+					contributionMatrix[i,at.level]<<-(1 - sqrt(distanceTilde2(i, at.level)))
 				}
 			}
 	)
