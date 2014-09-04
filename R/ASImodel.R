@@ -118,10 +118,10 @@ ASImodel <- setRefClass("ASImodel",
 				colnames(joinMatrix)[ncol(joinMatrix)] <<-levels+1
 			},
 
-			findGenericPair = function(level){
-				joinedWithClass <- joinedWithClass(nPrimitiveClasses+level, level)
-				iAtThisLevel <- which(joinMatrix[nPrimitiveClasses+level,joinedWithClass] == level)
-				Tuple <- joinedWithClass[iAtThisLevel]
+			findGenericPair = function(level, Tuple){
+				# joinedWithClass <- joinedWithClass(nPrimitiveClasses+level, level)
+				# iAtThisLevel <- which(joinMatrix[nPrimitiveClasses+level,joinedWithClass] == level)
+				# Tuple <- joinedWithClass[iAtThisLevel]
 				joinedWithFirst  <- joinedWithClass(Tuple[1], level, primitivesOnly=TRUE)
 				joinedWithSecond <- joinedWithClass(Tuple[2], level, primitivesOnly=TRUE)
 
@@ -164,7 +164,7 @@ ASImodel <- setRefClass("ASImodel",
 				            (length(SimilaritiesJoined)*(length(SimilaritiesJoined)+1))/(2*2) 
 				return(list( cardinal= cardinal, nJoin = length(SimilaritiesJoined)/2, nSep = length(SimilaritiesSepparated)/2))
 			},
-			#report
+			
 			getSimilarityMatrix = function(at.level=levels){
 				"Returns the similarity matrix at the specified level of the hierarchical tree"
 				.checkIfLevelExists(at.level)
@@ -181,28 +181,31 @@ ASImodel <- setRefClass("ASImodel",
 					stop("Wrong level or level still not computed")
 			},
 
-			distance2 = function(individual, class, genericPair){
-				joinedWithClass <- joinedWithClass(class)
-				classSubclasses <- joinMatrix[joinedWithClass > nPrimitiveClasses]
-				return( 1/length(classSubclasses) * sum((genericPair$phi-genericImplicationsMatrix[individual,classSubclasses])^2
-								  		  / 1-genericPair$phi))
+			distance2 = function(individual, level, genericPair){
+				classSubClasses <- .getSubLevels(level)
+				return( 1/length(classSubClasses) * sum((genericPair$phi-genericImplicationsMatrix[individual,classSubClasses])^2
+								  		  / (1-genericPair$phi)))
 			},
 
-			distanceTilde2 = function(individual, class){
-				joinedWithClass <- joinedWithClass(class)
-				classSubclasses <- joinMatrix[joinedWithClass > nPrimitiveClasses]
+			.getSubLevels = function(class){
+				joinedWithClass <- joinedWithClass(nPrimitiveClasses+class, class)
+				classSubClasses <- joinedWithClass[which(joinMatrix[nPrimitiveClasses+class,joinedWithClass] == class)]
+				return(c(class, classSubClasses[classSubClasses > nPrimitiveClasses]-nPrimitiveClasses))
+			},
+
+			distanceTilde2 = function(individual, level){
+				classSubclasses <- .getSubLevels(level)
 				return( 1/length(classSubclasses) * sum((1-genericImplicationsMatrix[individual,classSubclasses])^2))
 			},			
 
-			setTypicality = function(genericPair, at.level=levels){				
+			setTypicality = function(genericPair, at.level=levels ){				
 				"Computes the typicality of each individual for a certain class"
-				for(i in 1:nrow(data))
+				dist<-array(NaN, nIndividuals)
+				for(i in 1:nIndividuals)
 				{
-					typicalityMatrix[i,at.level]<<-(1-sqrt(distance2(i, at.level, genericPair)))
+					dist[i]<-sqrt(distance2(i, at.level, genericPair))
 				}
-				joinedWithClass <- joinedWithClass(at.level)
-				typicalityMatrix[,at.level]<<- typicalityMatrix[,at.level]/ max(typicalityMatrix[joinedWithClass,at.level])
-
+				typicalityMatrix[,at.level]<<- 1 - dist/ max(dist)
 			},
 
 			setContribution = function(genericPair, at.level=levels){
