@@ -119,6 +119,7 @@ ASImodel <- setRefClass("ASImodel",
 			},
 
 			findGenericPair = function(level, Tuple){
+				"Finds the generic Pair of a derived class"
 				# joinedWithClass <- joinedWithClass(nPrimitiveClasses+level, level)
 				# iAtThisLevel <- which(joinMatrix[nPrimitiveClasses+level,joinedWithClass] == level)
 				# Tuple <- joinedWithClass[iAtThisLevel]
@@ -131,8 +132,9 @@ ASImodel <- setRefClass("ASImodel",
 				return(list(phi = maxPhi, pos = maxPhiInd))
 			},
 
-			setGenericImplications = function(genericPair, level, p = 0.5){				
-				for(i in 1:nrow(data))
+			setGenericImplications = function(genericPair, level, p = 0.5){
+				"Sets the generic implication of each individual for a given derived class (level)"				
+				for(i in 1:nIndividuals)
 				{
 					if(data[i, genericPair[2]]!=1)
 						if(data[i, genericPair[1]]) genericImplicationsMatrix[i, level]<<-0
@@ -210,7 +212,7 @@ ASImodel <- setRefClass("ASImodel",
 
 			setContribution = function(genericPair, at.level=levels){
 				"Computes the contribution of each individual for a certain class"				
-				for(i in 1:nrow(data))
+				for(i in 1:nIndividuals)
 				{
 					contributionMatrix[i,at.level]<<-(1 - sqrt(distanceTilde2(i, at.level)))
 				}

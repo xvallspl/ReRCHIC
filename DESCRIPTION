@@ -1,7 +1,7 @@
 Package: rerchic
 Type: Package
 Title: R Package for Implicative Statistical Analysis
-Version: 0.1
+Version: 0.2
 Date: 2014
 Author: Xavier Valls
 Maintainer: Xavier Valls <xvalls@uji.es>

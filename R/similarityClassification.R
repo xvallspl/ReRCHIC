@@ -22,6 +22,7 @@ callASIAlgorithm <-function( data, model, report=FALSE){
 		genericPair<- aData$findGenericPair(i, S$nodes)
 		aData$setGenericImplications(genericPair$pos, i)
 		aData$setTypicality(genericPair, at.level=i)
+		aData$setContribution(genericPair, at.level=i)
 		S$nodes[S$nodes> aData$nPrimitiveClasses] = tree[S$nodes[S$nodes>aData$nPrimitiveClasses]-aData$nPrimitiveClasses]
 		tree[i]=paste("(", S$nodes[1],",",S$nodes[2] ,"):", S$value,sep="")
 	}
@@ -33,7 +34,7 @@ callASIAlgorithm <-function( data, model, report=FALSE){
 		report = list()
 		report$dims <- c(ncol(data), nrow(data))
 		report$initialSimilarityMatrix<-aData$getSimilarityMatrixAtLevel(0)
-		report$cor <-cor(data)
+		report$cor <- cor(data)
 		report$freq <- NULL
 		report$basicStats <- cbind(apply(data,2,sum), apply(data, 2, mean), apply(data,2, sd))
 		colnames(report$basicStats) <- c("freq","mean","sd")

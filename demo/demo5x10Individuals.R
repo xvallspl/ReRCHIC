@@ -16,6 +16,7 @@ for( i in 1:( ncol(data)-1))
 	genericPair<- aData$findGenericPair(i, S$nodes)
 	aData$setGenericImplications(genericPair$pos, i)
 	aData$setTypicality(genericPair, at.level=i)
+	aData$setContribution(genericPair, at.level=i)
 	S$nodes[S$nodes>ncol(data)] = tree[S$nodes[S$nodes>ncol(data)]-ncol(data)]
 	tree[i]=paste("(", S$nodes[1],",",S$nodes[2] ,"):", S$value,sep="")
 }
