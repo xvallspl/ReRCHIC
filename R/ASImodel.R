@@ -52,8 +52,8 @@ ASImodel <- setRefClass("ASImodel",
 				"Gets the maximum similartity at the specified level. By default the last one"
 				simMat <- getSimilarityMatrix(at.level)
 				joined <- getJoinedClasses(at.level)
-				M <-which( similarityMatrix == max(simMat), arr.ind = TRUE )
-				MnotJoined<-apply( M, 1, function(x){all(!(x %in%joined))})
+				M <- which( similarityMatrix == max(simMat), arr.ind = TRUE )
+				MnotJoined <- apply( M, 1, function(x){all(!(x %in%joined))})
 			 	return(list(nodes = M[MnotJoined,][1, ], value = max(simMat)))
 			 },
 
@@ -70,10 +70,17 @@ ASImodel <- setRefClass("ASImodel",
 
 			 joinedWithClass = function(class, at.level=levels, primitivesOnly = FALSE){
 			 	.checkIfLevelExists(at.level)
-				if(!primitivesOnly) n <- nPrimitiveClasses+at.level else n <- nPrimitiveClasses
-				joined<-which(!( joinMatrix[class, 1:n]  %in% NaN))
-			 	return(c(class, which(!(joinMatrix[class, 1:n]  %in% NaN) & 
-			 							joinMatrix[class, 1:n] <=at.level)))
+				if(!primitivesOnly){
+					ret <- class
+					n   <- nPrimitiveClasses+at.level 
+				}
+				else{
+					ret <- c()
+					n   <- nPrimitiveClasses
+				}	 
+				joined <- which(!(joinMatrix[class, 1:n]  %in% NaN) & 
+			 							joinMatrix[class, 1:n] <=at.level)
+			 	return(c(ret, joined))
 			 },
 
 			joinClasses = function(Tuple){
@@ -127,7 +134,8 @@ ASImodel <- setRefClass("ASImodel",
 				joinedWithSecond <- joinedWithClass(Tuple[2], level, primitivesOnly=TRUE)
 
 				maxPhi <- max(similarityMatrix[joinedWithFirst, joinedWithSecond])
-				maxPhiInd <- which(similarityMatrix == maxPhi, arr.ind=T)[1,]
+				simMat <- similarityMatrix[1:nPrimitiveClasses, 1:nPrimitiveClasses]
+				maxPhiInd <- which( simMat == maxPhi, arr.ind=T)[1,]
 				
 				return(list(phi = maxPhi, pos = maxPhiInd))
 			},

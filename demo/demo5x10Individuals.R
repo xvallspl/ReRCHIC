@@ -4,7 +4,6 @@
 #' the algorithm function (yet).
 #' 
 #' @author Xavier Valls \email{xaviervallspla@@gmail.com}
-source("ReRCHIC/R/ASImodel.R")
 
 data(demo5_10)
 aData <- ASImodel$new(data)
