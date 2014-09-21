@@ -1,6 +1,6 @@
-#' Performs the similarity analysis on the animalesSmall dataset, plotting the hierarchical tree as a phylogenetic tree.
+#' Performs the similarity analysis on arules' Adult dataset, providing a report.
 #' 
-#' Similarity analysis on arules' dataset, a dataset describing children perception of animals characteristics.
+#' Similarity analysis with report on arules' Adult dataset with a boolean matrix instead of an integer binary one.
 #' 
 #' @author Xavier Valls \email{xaviervallspla@@gmail.com}
 
