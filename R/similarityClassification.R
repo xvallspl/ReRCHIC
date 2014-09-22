@@ -23,8 +23,10 @@ callASIAlgorithm <-function( data, model, report=FALSE){
 		aData$setGenericImplications(genericPair$pos, i)
 		aData$setTypicality(genericPair, at.level=i)
 		aData$setContribution(genericPair, at.level=i)
-		S$nodes[S$nodes> aData$nPrimitiveClasses] = tree[S$nodes[S$nodes>aData$nPrimitiveClasses]-aData$nPrimitiveClasses]
-		tree[i]=paste("(", S$nodes[1],",",S$nodes[2] ,"):", S$value,sep="")
+		S$nodes[S$nodes>ncol(data)] = tree[S$nodes[S$nodes>ncol(data)]-ncol(data)]
+		print(S$nodes)
+		names<-names(S$nodes)
+		tree[i]<- paste(colnames(aData$similarityMatrix)[aData$nPrimitiveClasses+i])
 	}
 
 	newickTree = paste(tree, ';', sep="")
@@ -50,10 +52,15 @@ displayReport <- function(report)
 	print(paste("ncol:", report$dims[1], ", nrow:", report$dims[2]))
 	print(report$basicStats)
 	print("Bivariant frequency:")
+	print(report$freq)
 	print("Correlation coefficient:")
+	print(report$cor)
 	print("Similarity indices:")
+	print(report$initialSimilarityMatrix)
+
 	for(i in 1:ncol(length(report$tree)))
 	{
-		print(paste("Classification at level", i))
+		print(paste("Classification at level ", i))
+		print(report$tree[i])
 	}
 }
