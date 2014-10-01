@@ -13,9 +13,9 @@ callASIAlgorithm(data, model, report = FALSE)
 \item{report}{If true, displays a report}
 }
 \value{
-report 		Report of the data: algorithm results, hierarchical tree, basic statistic analysis.
+report      Report of the data: algorithm results, hierarchical tree, basic statistic analysis.
 
-newickTree	Hierarchical tree in Newick's format.
+newickTree  Hierarchical tree in Newick's format.
 }
 \description{
 Functions that performs the algorithm for the Statistical implicative analysis.
