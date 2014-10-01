@@ -24,7 +24,6 @@ callASIAlgorithm <-function( data, model, report=FALSE){
 		aData$setTypicality(genericPair, at.level=i)
 		aData$setContribution(genericPair, at.level=i)
 		S$nodes[S$nodes>ncol(data)] = tree[S$nodes[S$nodes>ncol(data)]-ncol(data)]
-		print(S$nodes)
 		names<-names(S$nodes)
 		tree[i]<- paste(colnames(aData$similarityMatrix)[aData$nPrimitiveClasses+i])
 	}
