@@ -11,9 +11,11 @@
 #' @field nPrimitiveClasses Number of primitive classes
 
 ASImodel <- setRefClass("ASImodel",
-  fields = c("data", "model", "levels", "joinMatrix", "similarityMatrix","genericImplicationsMatrix", "joinedClasses","nPrimitiveClasses", "contributionMatrix","typicalityMatrix","nIndividuals"),
+  fields = c("data", "model", "levels", "joinMatrix", "similarityMatrix",
+  			 "genericImplicationsMatrix", "joinedClasses","nPrimitiveClasses", "contributionMatrix",
+  			 "typicalityMatrix","nIndividuals"),
   methods = list( 
-  	
+
       initialize = function( externalData, model = "pois" )
       {
         if(!is.matrix(externalData))
@@ -41,9 +43,11 @@ ASImodel <- setRefClass("ASImodel",
           probabilityOfCopresence <- tcrossprod(nBinaryPresences, nBinaryPresences)/nIndividuals^2 
 
         if(model == 'pois'){
-          similarityMatrix <<- ppois( q = nBinaryCopresences, lambda = nIndividuals*probabilityOfCopresence )
+          similarityMatrix <<- ppois( q = nBinaryCopresences, 
+          							  lambda = nIndividuals*probabilityOfCopresence )
         }else if(model == 'binom'){
-          similarityMatrix <<- pbinom( q = nBinaryCopresences, size = nIndividuals, prob = probabilityOfCopresence )  
+          similarityMatrix <<- pbinom( q = nBinaryCopresences, size = nIndividuals, 
+          							   prob = probabilityOfCopresence )  
         }
         diag(similarityMatrix)<<-0
       },
@@ -87,7 +91,9 @@ ASImodel <- setRefClass("ASImodel",
 
       joinClasses = function(Tuple){
         "Joins two classes into a new node of the hierarchical tree"
-        if(ncol(similarityMatrix) == (2*nPrimitiveClasses-1)) stop("You're already at the last level!")
+        if(ncol(similarityMatrix) == (2*nPrimitiveClasses-1)){ 
+        	stop("You're already at the last level!")
+        }
          .computeNewClassSimilarities(Tuple)
          .updateJoinMatrix(Tuple)
          levels <<- levels+1
@@ -108,12 +114,15 @@ ASImodel <- setRefClass("ASImodel",
           if(!(i %in% joinedWithTuple))
           {  
             classOutsideTuple <- which(!(joinMatrix[i, 1:ncol(similarityMatrix)] %in% NaN))
-            newClassCol[i] <- max(similarityMatrix[classOutsideTuple, primitivesJoinedWithTuple])^(length(primitivesJoinedWithTuple)*length(classOutsideTuple))
-            newClassRow[i] <- max(similarityMatrix[primitivesJoinedWithTuple, classOutsideTuple])^(length(primitivesJoinedWithTuple)*length(classOutsideTuple))
+            newClassCol[i] <- max(similarityMatrix[classOutsideTuple, primitivesJoinedWithTuple])^
+            						(length(primitivesJoinedWithTuple)*length(classOutsideTuple))
+            newClassRow[i] <- max(similarityMatrix[primitivesJoinedWithTuple, classOutsideTuple])^
+            						(length(primitivesJoinedWithTuple)*length(classOutsideTuple))
           }
         }
         similarityMatrix <<- rbind(cbind(similarityMatrix, newClassCol), c(newClassRow,0))
-        colnames(similarityMatrix)[ncol(similarityMatrix)]<<-paste("(",colnames(similarityMatrix)[Tuple[1]],",", colnames(similarityMatrix)[Tuple[2]],")")        
+        colnames(similarityMatrix)[ncol(similarityMatrix)]<<- paste("(",
+        		colnames(similarityMatrix)[Tuple[1]],",", colnames(similarityMatrix)[Tuple[2]],")")        
       },
       
       .updateJoinMatrix = function(Tuple){
@@ -129,9 +138,6 @@ ASImodel <- setRefClass("ASImodel",
 
       findGenericPair = function(level, Tuple){
         "Finds the generic Pair of a derived class"
-        # joinedWithClass <- joinedWithClass(nPrimitiveClasses+level, level)
-        # iAtThisLevel <- which(joinMatrix[nPrimitiveClasses+level,joinedWithClass] == level)
-        # Tuple <- joinedWithClass[iAtThisLevel]
         joinedWithFirst  <- joinedWithClass(Tuple[1], level, primitivesOnly=TRUE)
         joinedWithSecond <- joinedWithClass(Tuple[2], level, primitivesOnly=TRUE)
 
@@ -174,7 +180,8 @@ ASImodel <- setRefClass("ASImodel",
         cardinal <- sum(which(sort(unique(c(SimilaritiesJoined, SimilaritiesSepparated))) 
                       %in% SimilaritiesSepparated)) - 
                     (length(SimilaritiesJoined)*(length(SimilaritiesJoined)+1))/(2*2) 
-        return(list( cardinal= cardinal, nJoin = length(SimilaritiesJoined)/2, nSep = length(SimilaritiesSepparated)/2))
+        return(list( cardinal= cardinal, nJoin = length(SimilaritiesJoined)/2,
+        			 nSep = length(SimilaritiesSepparated)/2))
       },
       
       getSimilarityMatrix = function(at.level=levels){
@@ -184,7 +191,8 @@ ASImodel <- setRefClass("ASImodel",
         if(!length(omit)) 
           simMat <- similarityMatrix[1:nPrimitiveClasses, 1:nPrimitiveClasses]
         else 
-          simMat <- similarityMatrix[1:(nPrimitiveClasses+at.level),1:(nPrimitiveClasses+at.level)][-omit, -omit] 
+          simMat <- similarityMatrix[1:(nPrimitiveClasses+at.level),
+          							 1:(nPrimitiveClasses+at.level)][-omit, -omit] 
         return(simMat)
       },
 
@@ -195,19 +203,21 @@ ASImodel <- setRefClass("ASImodel",
 
       distance2 = function(individual, level, genericPair){
         classSubClasses <- .getSubLevels(level)
-        return( 1/length(classSubClasses) * sum((genericPair$phi-genericImplicationsMatrix[individual,classSubClasses])^2
-                        / (1-genericPair$phi)))
+        return( 1/length(classSubClasses) * sum((genericPair$phi-
+        	genericImplicationsMatrix[individual,classSubClasses])^2 / (1-genericPair$phi)))
       },
 
       .getSubLevels = function(class){
         joinedWithClass <- joinedWithClass(nPrimitiveClasses+class, class)
-        classSubClasses <- joinedWithClass[which(joinMatrix[nPrimitiveClasses+class,joinedWithClass] == class)]
+        classSubClasses <- joinedWithClass[which(
+        		joinMatrix[nPrimitiveClasses+class,joinedWithClass] == class)]
         return(c(class, classSubClasses[classSubClasses > nPrimitiveClasses]-nPrimitiveClasses))
       },
 
       distanceTilde2 = function(individual, level){
         classSubclasses <- .getSubLevels(level)
-        return( 1/length(classSubclasses) * sum((1-genericImplicationsMatrix[individual,classSubclasses])^2))
+        return( 1/length(classSubclasses) * sum((1-genericImplicationsMatrix[individual,
+        																	classSubclasses])^2))
       },      
 
       setTypicality = function(genericPair, at.level=levels ){        

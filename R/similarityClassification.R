@@ -6,7 +6,7 @@
 #' @param model   Probability model to use. Binom or pois.
 #' @param report  If true, displays a report
 #' 
-#' @return report      Report of the data: algorithm results, hierarchical tree, basic statistic analysis. 
+#' @return report      Report: algorithm results, hierarchical tree, basic statistic analysis. 
 #' @return newickTree  Hierarchical tree in Newick's format.
 #' 
 #' @author Xavier Valls \email{xaviervallspla@@gmail.com}
