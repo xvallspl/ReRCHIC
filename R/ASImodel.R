@@ -55,7 +55,7 @@ ASImodel <- setRefClass("ASImodel",
 				M <- which( similarityMatrix == max(simMat), arr.ind = TRUE )
 				MnotJoined <- apply( M, 1, function(x){all(!(x %in%joined))})
 				nodes <- M[MnotJoined,][1, ]
-				names(nodes)<-colnames(simMat)[nodes]
+				names(nodes)<-colnames(similarityMatrix)[nodes]
 			 	return(list(nodes = nodes, value = max(simMat)))
 			 },
 
@@ -108,8 +108,8 @@ ASImodel <- setRefClass("ASImodel",
 					if(!(i %in% joinedWithTuple))
 					{	
 						classOutsideTuple <- which(!(joinMatrix[i, 1:ncol(similarityMatrix)] %in% NaN))
-						newClassCol[i] <- max(similarityMatrix[classOutsideTuple, primitivesJoinedWithTuple])^length(primitivesJoinedWithTuple)*length(classOutsideTuple)
-						newClassRow[i] <- max(similarityMatrix[primitivesJoinedWithTuple, classOutsideTuple])^length(primitivesJoinedWithTuple)*length(classOutsideTuple)
+						newClassCol[i] <- max(similarityMatrix[classOutsideTuple, primitivesJoinedWithTuple])^(length(primitivesJoinedWithTuple)*length(classOutsideTuple))
+						newClassRow[i] <- max(similarityMatrix[primitivesJoinedWithTuple, classOutsideTuple])^(length(primitivesJoinedWithTuple)*length(classOutsideTuple))
 					}
 				}
 				similarityMatrix <<- rbind(cbind(similarityMatrix, newClassCol), c(newClassRow,0))
