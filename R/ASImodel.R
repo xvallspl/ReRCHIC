@@ -38,12 +38,12 @@ ASImodel <- setRefClass("ASImodel",
 			initializeSimilarityMatrix = function(externalData){
 			  	nBinaryPresences <- apply(externalData,2,'sum')
 				nBinaryCopresences <- crossprod(externalData, externalData)
-			  	probabilityOfCopresence <- tcrossprod(nBinaryPresences, nBinaryPresences)/nPrimitiveClasses^2 
+			  	probabilityOfCopresence <- tcrossprod(nBinaryPresences, nBinaryPresences)/nIndividuals^2 
 
 				if(model == 'pois'){
-					similarityMatrix <<- ppois( q = nBinaryCopresences, lambda = nPrimitiveClasses*probabilityOfCopresence )
+					similarityMatrix <<- ppois( q = nBinaryCopresences, lambda = nIndividuals*probabilityOfCopresence )
 				}else if(model == 'binom'){
-					similarityMatrix <<- pbinom( q = nBinaryCopresences, size = nPrimitiveClasses, prob = probabilityOfCopresence )  
+					similarityMatrix <<- pbinom( q = nBinaryCopresences, size = nIndividuals, prob = probabilityOfCopresence )  
 				}
 				diag(similarityMatrix)<<-0
 			},
